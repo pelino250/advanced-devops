@@ -34,10 +34,12 @@ Here's a sample playbook:
       apt: update_cache=yes
 
     - name: Install basic utilities
-      apt: name={{ item }} state=present
-        with_items:
-          - vim
-          - net-tools
+      apt: 
+        name: "{{ item }}" 
+        state: present
+      loop:
+        - vim
+        - net-tools
 
     - name: Create a user for Ansible
       user:
@@ -86,7 +88,7 @@ Here's a sample playbook:
 * With your SSH key pair generated and the playbook created, run:
 
 ```bash
-ansible-playbook initial_server_config.yml
+ansible-playbook django_deploy.yml
 ```
 
 * This will connect to your servers (using the temporary password), configure them, and switch to SSH key-based authentication.

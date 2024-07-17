@@ -1,0 +1,55 @@
+- hosts: servers  # Use your server group or all servers
+  become: true  # Gain root privileges for tasks
+  tasks:
+    - name: Update package lists
+      apt: update_cache=yes
+
+    - name: Install required packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+          - python3-pip
+          - python3-dev
+          - nginx
+
+    - name: Create a directory for the Django app
+      file:
+        path: /var/www/django_app # chown -R www-data:www-data /var/www/django_app
+        state: directory
+        owner: www-data
+        group: www-data
+
+    - name: Copy the Django application code
+      copy:
+        src: ../django_app/  # Replace with your app directory
+        dest: /var/www/django_app/
+        owner: www-data
+        group: www-data
+
+    - name: Install Python dependencies
+      pip:
+        requirements: /var/www/django_app/requirements.txt  # Replace with your requirements file
+
+    - name: Configure Nginx for the Django app
+      template:
+        src: nginx.conf.j2  # Replace with your Nginx template file
+        dest: /etc/nginx/sites-available/default
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Enable the Nginx configuration for the Django app
+      file:
+        src: /etc/nginx/sites-available/default
+        dest: /etc/nginx/sites-enabled/default
+        state: link
+        owner: root
+        group: root
+
+    - name: Restart Nginx service
+      service:
+        name: nginx
+        state: restarted
+
+  # Add additional tasks for database setup, environment variables, etc.
